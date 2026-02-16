@@ -12,11 +12,6 @@
 #include "imgui.h"
 #include "sokol_imgui.h"
 
-// 渲染状态
-static struct {
-    sg_pass_action pass_action;
-} state;
-
 static void init(void) {
     // 先初始化渲染器
     sg_desc gfx_desc = {};
