@@ -1,16 +1,11 @@
 
-
-#define SOKOL_IMPL
-#define SOKOL_GLES3
-#define SOKOL_IMGUI_IMPL
-
-#include "sokol_app.h"
-#include "sokol_gfx.h"
-#include "sokol_glue.h"
-#include "sokol_log.h"
+#include "sokol_impl.hh"
+#include "keyboard.hh"
+#include "inputchar.hh"
 
 #include "imgui.h"
 #include "sokol_imgui.h"
+#include <android/native_activity.h>
 
 static void init(void) {
     // 先初始化渲染器
@@ -61,6 +56,15 @@ static void frame(void) {
     ImGui::Text("Hello, Android");
     if (ImGui::Button("TapMe")) {
         // 处理点击
+        // ANativeActivity_showSoftInput((ANativeActivity*)sapp_android_get_native_activity(), ANATIVEACTIVITY_SHOW_SOFT_INPUT_FORCED);
+        show_android_keyboard(true);
+    }
+    static char buf[128] = ""; // 必须是静态的或者在类成员里，保证生命周期
+    if (ImGui::InputText("InputText", buf, IM_ARRAYSIZE(buf))) {
+        show_android_keyboard(true);
+    }
+    if (ImGui::GetIO().WantTextInput) {
+        show_android_keyboard(true);
     }
     ImGui::End();
 

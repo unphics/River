@@ -31,6 +31,7 @@ target("River")
     add_includedirs("libs/imgui")
     
     add_files("src/*.cpp")
+    -- add_files("src/*.cc")
     add_files("libs/imgui/*.cpp")
 	-- add_files("src/shaders/*.glsl")
     add_packages("opengl")
