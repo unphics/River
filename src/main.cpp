@@ -1,7 +1,7 @@
 
 #include "sokol_impl.hh"
 #include "keyboard.hh"
-#include "inputchar.hh"
+// #include "inputchar.hh"
 
 #include "imgui.h"
 #include "sokol_imgui.h"

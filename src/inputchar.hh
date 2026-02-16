@@ -1,6 +1,8 @@
 #ifndef inputchar_hh
 #define inputchar_hh
 
+#include "imgui.h"
+#include "sokol_imgui.h"
 #include <jni.h>
 
 // 辅助函数：将 Android Key Event 转换为 Unicode 字符
