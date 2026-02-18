@@ -1,0 +1,1 @@
+C:\Users\zys15\AppData\Local\Android\Sdk\build-tools\36.1.0\aapt.exe list build\android\arm64-v8a\release\main.apk

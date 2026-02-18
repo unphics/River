@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" 
           xmlns:tools="http://schemas.android.com/tools"
-    package="com.zys.river"
+    package="com.river"
 		  
 	android:versionCode="15"
     android:versionName="1.5">
@@ -11,11 +11,11 @@
 	<uses-permission android:name="android.permission.SET_RELEASE_APP"/>
 
     <application 
-        android:label="River" android:debuggable="true" android:hasCode="false"          
+        android:label="River" android:debuggable="true" android:hasCode="true"          
         tools:replace="android:icon,android:theme,android:allowBackup,label" 
         android:icon="@mipmap/icon">
 
-        <activity android:name="android.app.NativeActivity"
+        <activity android:name="app.MainActivity"
                   android:label="River"
                   android:configChanges="orientation|keyboardHidden|screenSize|screenLayout"
                   android:screenOrientation="portrait"
