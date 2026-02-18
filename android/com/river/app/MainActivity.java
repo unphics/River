@@ -1,24 +1,28 @@
-
-package app;
-
+package com.river.app;
 
 import android.app.NativeActivity;
+import android.view.View;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.BaseInputConnection;
 import android.text.InputType;
+import android.os.Bundle;
 
 public class MainActivity extends NativeActivity {
-    // 这个函数是关键：当输入法连接时，返回一个能接收文字的“管道”
     @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
+    // 注意: 这个方法在Activity中不是重写(Override)而是自定义方法
+    // 如果你是想拦截输入法, 通常需要作用在View上
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
         outAttrs.inputType = InputType.TYPE_CLASS_TEXT;
         outAttrs.imeOptions = EditorInfo.IME_ACTION_DONE;
 
-        return new BaseInputConnection(this, true) {
+        return new BaseInputConnection(getWindow().getDecorView(), true) {
             @Override
             public boolean commitText(CharSequence text, int newCursorPosition) {
-                // 每当输入法提交一段文字（包括中文、字母）
                 for (int i = 0; i < text.length(); i++) {
                     sendCharToNative(text.charAt(i));
                 }

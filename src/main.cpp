@@ -99,3 +99,14 @@ sapp_desc sokol_main(int argc, char* argv[]) {
     desc.logger.func = slog_func;
     return desc;
 }
+
+extern "C" {
+    // 注意：JNI 的函数名必须严格匹配包名
+    // Java_包名_类名_方法名
+    JNIEXPORT void JNICALL Java_com_river_app_MainActivity_sendCharToNative(JNIEnv* env, jobject obj, jint unicodeChar) {
+        // 在这里接收来自 Java 的字符
+        __android_log_print(ANDROID_LOG_DEBUG, "River", "Received char: %c", (char)unicodeChar);
+        
+        // 接下来你可以把这个字符丢给你的 UI 引擎（如 Dear ImGui 或 Sokol）
+    }
+}

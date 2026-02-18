@@ -77,7 +77,7 @@ target("River")
                     path = path.join(android_dir, "debug.jks"), 
                     pass = conf.keystore_pass 
                 },
-                java_src    = path.join(android_dir, "java"),
+                java_src    = android_dir,
                 tools = {
                     aapt      = path.join(sdk_tool_path, "aapt" .. (is_win and ".exe" or "")),
                     d8        = path.join(sdk_tool_path, is_win and "d8.bat" or "d8"),
@@ -114,13 +114,23 @@ target("River")
                 local javac = find_tool("javac")
                 local java_files = os.files(path.join(ctx.java_src, "**.java"))
                 if #java_files > 0 then
+                    print("Found"..#java_files.." java files, compiling...")
+                    local classes_dir = path.join(ctx.tmp, "classes")
+                    os.mkdir(classes_dir)
+                    -- javac
                     os.vrunv(javac.program, {"-d", classes_dir, "-classpath", ctx.tools.jar, table.unpack(java_files)})
+                    -- d8
                     local class_files = os.files(path.join(classes_dir, "**.class"))
                     if #class_files > 0 then
+                        print("Generated"..#class_files.." classes, converting to dex...")
                         os.vrunv(ctx.tools.d8, {"--output", ctx.tmp, table.unpack(class_files)})
                         has_dex = true
                     end
+                else
+                    print("No java files found in "..ctx.java_src)
                 end
+            else
+                print("Java source dir not found")
             end
 
             -- B. aapt 打包
