@@ -64,8 +64,8 @@ function get_context(target)
         tools = {
             aapt      = path.join(sdk_tool_path, "aapt" .. (is_win and ".exe" or "")),
             d8        = path.join(sdk_tool_path, is_win and "d8.bat" or "d8"),
-            zipalign  = path.join(sdk_tool_path, is_win and "zipalign" .. (is_win and ".exe" or "")),
-            apksigner = path.join(sdk_tool_path, is_win and "apksigner" .. (is_win and ".bat" or "")),
+            zipalign  = path.join(sdk_tool_path, "zipalign" .. (is_win and ".exe" or "")),
+            apksigner = path.join(sdk_tool_path, "apksigner" .. (is_win and ".bat" or "")),
             jar       = path.join(sdk_dir, "platforms", "android-" .. conf.android_sdk_version, "android.jar")
         }
     }
@@ -106,23 +106,49 @@ end
 function build_apk_structure(ctx, target, has_dex)
     local res_apk = "res_only.apk"
     
-    -- A. 基础资源打包
+    -- 1. 确保基础资源打包
     local aapt_args = {"package", "-f", "-M", ctx.manifest, "-I", ctx.tools.jar, "-F", res_apk}
     if os.isdir(ctx.res) then table.insert(aapt_args, "-S"); table.insert(aapt_args, ctx.res) end
     if os.isdir(ctx.assets) then table.insert(aapt_args, "-A"); table.insert(aapt_args, ctx.assets) end
     os.vrunv(ctx.tools.aapt, aapt_args, {curdir = ctx.tmp})
 
-    -- B. 放入 .so 库
-    -- 注意：必须在 tmp 下建立物理目录结构
-    local rel_lib_path = "lib/" .. ctx.abi .. "/libmain.so"
-    local abs_lib_path = path.join(ctx.tmp, rel_lib_path)
-    os.mkdir(path.directory(abs_lib_path))
-    os.cp(target:targetfile(), abs_lib_path)
+    -- 2. 处理 .so 库
+    local arch = ctx.abi
+    local lib_name = "libmain.so"
+    local disk_lib_dir = path.join(ctx.tmp, "lib", arch)
+    local dst_so = path.join(disk_lib_dir, lib_name)
+    local src_so = target:targetfile()
 
-    -- aapt add 命令在 windows 下也必须用 "/"
-    os.vrunv(ctx.tools.aapt, {"add", res_apk, rel_lib_path}, {curdir = ctx.tmp})
+    -- 【优化：健壮性检查】确保源文件已生成
+    if not os.isfile(src_so) then
+        -- 有时候链接器刚跑完，系统还没刷新，等 200 毫秒
+        os.sleep(200)
+        if not os.isfile(src_so) then
+            raise("Source so file not found: " .. src_so)
+        end
+    end
 
-    -- C. 放入 dex
+    -- 【优化：强制按需创建目录】
+    if not os.isdir(disk_lib_dir) then
+        os.mkdir(disk_lib_dir)
+    end
+
+    -- 执行拷贝
+    os.cp(src_so, dst_so)
+
+    -- 再次确认拷贝成功（防止 Windows 抽风）
+    if not os.isfile(dst_so) then
+        os.sleep(100) -- 再给一点时间
+    end
+
+    -- 3. aapt add
+    -- 强制使用正斜杠路径，这是 aapt 在 APK 内部的要求
+    local aapt_rel_path = "lib/" .. arch .. "/" .. lib_name
+    
+    -- vrunv 在 Windows 下有时会因为路径问题失败，我们确保在 tmp 目录下运行
+    os.vrunv(ctx.tools.aapt, {"add", res_apk, aapt_rel_path}, {curdir = ctx.tmp})
+
+    -- 4. 放入 dex
     if has_dex then
         os.vrunv(ctx.tools.aapt, {"add", res_apk, "classes.dex"}, {curdir = ctx.tmp})
     end

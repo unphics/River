@@ -100,13 +100,35 @@ sapp_desc sokol_main(int argc, char* argv[]) {
     return desc;
 }
 
+#include <jni.h>
+#include <android/log.h>
+#include <string>
+// 将 Unicode 编号转换为 UTF-8 字符串
+std::string UnicodeToUTF8(int cp) {
+    std::string out;
+    if (cp <= 0x7F) {
+        out += (char)cp;
+    } else if (cp <= 0x7FF) {
+        out += (char)((cp >> 6) | 0xC0);
+        out += (char)((cp & 0x3F) | 0x80);
+    } else if (cp <= 0xFFFF) {
+        out += (char)((cp >> 12) | 0xE0);
+        out += (char)(((cp >> 6) & 0x3F) | 0x80);
+        out += (char)((cp & 0x3F) | 0x80);
+    } else if (cp <= 0x10FFFF) {
+        out += (char)((cp >> 18) | 0xF0);
+        out += (char)(((cp >> 12) & 0x3F) | 0x80);
+        out += (char)(((cp >> 6) & 0x3F) | 0x80);
+        out += (char)((cp & 0x3F) | 0x80);
+    }
+    return out;
+}
+
 extern "C" {
     // 注意：JNI 的函数名必须严格匹配包名
     // Java_包名_类名_方法名
     JNIEXPORT void JNICALL Java_com_river_app_MainActivity_sendCharToNative(JNIEnv* env, jobject obj, jint unicodeChar) {
-        // 在这里接收来自 Java 的字符
-        __android_log_print(ANDROID_LOG_DEBUG, "River", "Received char: %c", (char)unicodeChar);
-        
-        // 接下来你可以把这个字符丢给你的 UI 引擎（如 Dear ImGui 或 Sokol）
+        std::string utf8_char = UnicodeToUTF8(unicodeChar);
+        __android_log_print(ANDROID_LOG_DEBUG, "River", "Received: %s (CodePoint: %d)", utf8_char.c_str(), unicodeChar);
     }
 }
