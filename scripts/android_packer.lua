@@ -102,50 +102,59 @@ function build_dex(ctx)
     return false
 end
 
+-- 一个更强力的拷贝函数，带重试机制
+local function secure_cp(src, dst)
+    if not os.isfile(src) then raise("Source file missing: " .. src) end
+    
+    -- 确保目标目录存在
+    os.mkdir(path.directory(dst))
+    
+    for i = 1, 5 do -- 最多重试 5 次
+        try {
+            function() 
+                os.cp(src, dst) 
+            end
+        }
+        if os.isfile(dst) then return true end
+        os.sleep(200)
+    end
+    raise("Critical failure: Could not copy file to " .. dst)
+end
+
 -- 步骤 2: 使用 aapt 打包资源并添加 Native 库
 function build_apk_structure(ctx, target, has_dex)
     local res_apk = "res_only.apk"
     
-    -- 1. 确保基础资源打包
+    -- 1. 基础打包（必须正确包含 -S 和 -A 参数）
     local aapt_args = {"package", "-f", "-M", ctx.manifest, "-I", ctx.tools.jar, "-F", res_apk}
-    if os.isdir(ctx.res) then table.insert(aapt_args, "-S"); table.insert(aapt_args, ctx.res) end
-    if os.isdir(ctx.assets) then table.insert(aapt_args, "-A"); table.insert(aapt_args, ctx.assets) end
+    
+    -- 重新加上资源路径检查逻辑
+    if os.isdir(ctx.res) then 
+        table.insert(aapt_args, "-S")
+        table.insert(aapt_args, ctx.res) 
+        -- cinfof("Adding resources from: %s", ctx.res) -- 调试用
+    end
+    
+    if os.isdir(ctx.assets) then 
+        table.insert(aapt_args, "-A")
+        table.insert(aapt_args, ctx.assets) 
+        -- cinfof("Adding assets from: %s", ctx.assets) -- 调试用
+    end
+
+    -- 执行打包
     os.vrunv(ctx.tools.aapt, aapt_args, {curdir = ctx.tmp})
 
-    -- 2. 处理 .so 库
+    -- 2. 拷贝 so (保持刚才那个 secure_cp 逻辑)
     local arch = ctx.abi
     local lib_name = "libmain.so"
-    local disk_lib_dir = path.join(ctx.tmp, "lib", arch)
-    local dst_so = path.join(disk_lib_dir, lib_name)
-    local src_so = target:targetfile()
+    local abs_lib_dir = path.join(ctx.tmp, "lib", arch)
+    local abs_lib_path = path.join(abs_lib_dir, lib_name)
 
-    -- 【优化：健壮性检查】确保源文件已生成
-    if not os.isfile(src_so) then
-        -- 有时候链接器刚跑完，系统还没刷新，等 200 毫秒
-        os.sleep(200)
-        if not os.isfile(src_so) then
-            raise("Source so file not found: " .. src_so)
-        end
-    end
+    os.mkdir(abs_lib_dir)
+    secure_cp(target:targetfile(), abs_lib_path)
 
-    -- 【优化：强制按需创建目录】
-    if not os.isdir(disk_lib_dir) then
-        os.mkdir(disk_lib_dir)
-    end
-
-    -- 执行拷贝
-    os.cp(src_so, dst_so)
-
-    -- 再次确认拷贝成功（防止 Windows 抽风）
-    if not os.isfile(dst_so) then
-        os.sleep(100) -- 再给一点时间
-    end
-
-    -- 3. aapt add
-    -- 强制使用正斜杠路径，这是 aapt 在 APK 内部的要求
+    -- 3. aapt add so
     local aapt_rel_path = "lib/" .. arch .. "/" .. lib_name
-    
-    -- vrunv 在 Windows 下有时会因为路径问题失败，我们确保在 tmp 目录下运行
     os.vrunv(ctx.tools.aapt, {"add", res_apk, aapt_rel_path}, {curdir = ctx.tmp})
 
     -- 4. 放入 dex
@@ -177,15 +186,17 @@ end
 function main(target)
     local ctx = get_context(target)
     local final_apk = path.absolute(path.join(target:targetdir(), target:basename()..".apk"))
-    -- 定义依赖：只有源码或 Manifest 变了才重跑
     local depfiles = {target:targetfile(), ctx.manifest, ctx.keystore.path}
     table.join2(depfiles, os.files(path.join(ctx.java_src, "**.java")))
 
     depend.on_changed(function ()
         cinfof("Packaging APK for %s...", ctx.abi)
         
-        os.tryrm(ctx.tmp)
-        os.mkdir(ctx.tmp)
+        -- 修复：不要直接整个删掉 ctx.tmp，这在 Windows 上很不稳
+        -- 换成只清理里面的文件，或者确保根目录一直存在
+        if not os.isdir(ctx.tmp) then
+            os.mkdir(ctx.tmp)
+        end
 
         local has_dex = build_dex(ctx)
         local res_apk = build_apk_structure(ctx, target, has_dex)
