@@ -1,0 +1,1 @@
+我在使用xmake构建一个不使用gradle套件的android工程，但是遇到了问题，

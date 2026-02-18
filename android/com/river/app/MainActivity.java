@@ -7,10 +7,21 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.BaseInputConnection;
 import android.text.InputType;
 import android.os.Bundle;
+import android.util.Log;
 
 public class MainActivity extends NativeActivity {
+    static {
+        // 【关键修复】：手动加载 libmain.so。 
+        // 这里的 "main" 对应 libmain.so
+        try {
+            System.loadLibrary("main");
+        } catch (UnsatisfiedLinkError e) {
+            Log.e("River", "Could not load native library 'main': " + e.getMessage());
+        }
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.e("River", "MainActivity onCreate call");
         super.onCreate(savedInstanceState);
     }
 
