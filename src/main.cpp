@@ -7,6 +7,9 @@
 #include "sokol_imgui.h"
 #include <android/native_activity.h>
 
+static JavaVM* g_vm = nullptr;
+static jobject g_activity = nullptr;
+
 static void init(void) {
     // 先初始化渲染器
     sg_desc gfx_desc = {};
@@ -57,14 +60,14 @@ static void frame(void) {
     if (ImGui::Button("TapMe")) {
         // 处理点击
         // ANativeActivity_showSoftInput((ANativeActivity*)sapp_android_get_native_activity(), ANATIVEACTIVITY_SHOW_SOFT_INPUT_FORCED);
-        show_android_keyboard(true);
+        show_android_keyboard(g_activity, g_vm, true);
     }
     static char buf[128] = ""; // 必须是静态的或者在类成员里，保证生命周期
     if (ImGui::InputText("InputText", buf, IM_ARRAYSIZE(buf))) {
-        show_android_keyboard(true);
+        show_android_keyboard(g_activity, g_vm, true);
     }
     if (ImGui::GetIO().WantTextInput) {
-        show_android_keyboard(true);
+        show_android_keyboard(g_activity, g_vm, true);
     }
     ImGui::End();
 
@@ -125,10 +128,21 @@ std::string UnicodeToUTF8(int cp) {
 }
 
 extern "C" {
-    // 注意：JNI 的函数名必须严格匹配包名
-    // Java_包名_类名_方法名
-    JNIEXPORT void JNICALL Java_com_river_app_MainActivity_sendCharToNative(JNIEnv* env, jobject obj, jint unicodeChar) {
-        std::string utf8_char = UnicodeToUTF8(unicodeChar);
-        __android_log_print(ANDROID_LOG_DEBUG, "River", "Received: %s (CodePoint: %d)", utf8_char.c_str(), unicodeChar);
-    }
+// JNI的函数名必须严格匹配包名; Java_包名_类名_方法名
+JNIEXPORT void JNICALL Java_com_river_app_MainActivity_sendCharToNative(JNIEnv* env, jobject obj, jint unicodeChar) {
+    std::string utf8_char = UnicodeToUTF8(unicodeChar);
+    // __android_log_print(ANDROID_LOG_DEBUG, "River", "Received: %s (CodePoint: %d)", utf8_char.c_str(), unicodeChar);
+}
+JNIEXPORT void JNICALL Java_com_river_app_MainActivity_sendBackspaceToNative(JNIEnv* env, jobject obj) {
+    // __android_log_print(ANDROID_LOG_DEBUG, "River", "Received: Backspace");
+}
+JNIEXPORT void JNICALL Java_com_river_app_MainActivity_sendEnterToNative(JNIEnv* env, jobject obj) {
+    // __android_log_print(ANDROID_LOG_DEBUG, "River", "Received: Enter");
+}
+JNIEXPORT void JNICALL Java_com_river_app_MainActivity_nativeSetActivity(JNIEnv* env, jobject thiz) {
+    env->GetJavaVM(&g_vm);
+    g_activity = env->NewGlobalRef(thiz);
+    // __android_log_print(ANDROID_LOG_DEBUG, "River", "Activity captured from Java. env=[%p] vm=[%p] activity=[%p]", env, g_vm, g_activity);
+    show_android_keyboard(g_activity, g_vm, true);
+}
 }
