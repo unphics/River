@@ -10,17 +10,23 @@ import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
-import android.text.InputType; // 注意：InputType 在 android.text 包下
+import android.text.InputType;
 
 public class MainActivity extends NativeActivity {
 
     static {
-        System.loadLibrary("main");
+        try {
+            System.loadLibrary("main");
+        } catch (UnsatisfiedLinkError e) {
+            Log.e("River", "Could not load native library 'main': " + e.getMessage());
+        }
     }
 
+    // java call cpp
     public native void sendCharToNative(int unicodeChar);
+    
 
-    // 声明一个变量来保存我们的拦截 View
+    // 保存拦截View
     private InterceptInputView mInputView;
 
     @Override
@@ -28,14 +34,12 @@ public class MainActivity extends NativeActivity {
         super.onCreate(savedInstanceState);
         Log.e("River", "MainActivity onCreate");
 
-        // 1. 创建拦截 View
+        // 创建拦截View
         mInputView = new InterceptInputView(this);
-        
-        // 2. 将它添加到 Activity 的布局中（虽然它是不可见的，但必须存在于 View 树里）
+        // 将它添加到Activity的布局中(虽然它是不可见的, 但必须存在于View树里)
         ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(1, 1);
         addContentView(mInputView, params);
-
-        // 3. 让他可以获得焦点
+        // 让他可以获得焦点
         mInputView.setFocusable(true);
         mInputView.setFocusableInTouchMode(true);
         // this.showKeyboard();
@@ -82,7 +86,7 @@ public class MainActivity extends NativeActivity {
         }
     }
 
-    // 提供一个给 C++ 调用的方法，用来弹出键盘
+    // cpp call java
     public void showKeyboard() {
         runOnUiThread(new Runnable() {
             @Override
