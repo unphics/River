@@ -28,6 +28,7 @@ public class MainActivity extends NativeActivity {
     public native void sendBackspaceToNative();
     public native void sendEnterToNative();
     public native void nativeSetActivity(MainActivity activity);
+    public native void setNativeStoragePath(String path);
 
     // 保存拦截View
     private InterceptInputView mInputView;
@@ -36,6 +37,7 @@ public class MainActivity extends NativeActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.e("River", "MainActivity onCreate");
+        
         // 创建拦截View
         mInputView = new InterceptInputView(this);
         // 将它添加到Activity的布局中(虽然它是不可见的, 但必须存在于View树里)
@@ -44,8 +46,11 @@ public class MainActivity extends NativeActivity {
         // 让他可以获得焦点
         mInputView.setFocusable(true);
         mInputView.setFocusableInTouchMode(true);
-        // this.showKeyboard();
+        
         this.nativeSetActivity(this);
+        
+        String fileDir = this.getFilesDir().getAbsolutePath();
+        this.setNativeStoragePath(fileDir);
     }
 
     // 内部类：专门处理输入法逻辑的 View

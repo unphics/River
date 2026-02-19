@@ -6,6 +6,7 @@
 #include "imgui.h"
 #include "sokol_imgui.h"
 #include <android/native_activity.h>
+#include <string>
 
 static JavaVM* g_vm = nullptr;
 static jobject g_activity = nullptr;
@@ -127,6 +128,7 @@ std::string UnicodeToUTF8(int cp) {
     return out;
 }
 
+static std::string InternalStoragePath;
 extern "C" {
 // JNI的函数名必须严格匹配包名; Java_包名_类名_方法名
 JNIEXPORT void JNICALL Java_com_river_app_MainActivity_sendCharToNative(JNIEnv* env, jobject obj, jint unicodeChar) {
@@ -145,4 +147,10 @@ JNIEXPORT void JNICALL Java_com_river_app_MainActivity_nativeSetActivity(JNIEnv*
     // __android_log_print(ANDROID_LOG_DEBUG, "River", "Activity captured from Java. env=[%p] vm=[%p] activity=[%p]", env, g_vm, g_activity);
     show_android_keyboard(g_activity, g_vm, true);
 }
+JNIEXPORT void JNICALL Java_com_river_app_MainActivity_setNativeStoragePath(JNIEnv* env, jobject obj, jstring path) {
+    const char* pathStr = env->GetStringUTFChars(path, nullptr);
+    InternalStoragePath = pathStr;
+    env->ReleaseStringUTFChars(path, pathStr);
+}
+
 }
