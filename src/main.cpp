@@ -1,4 +1,5 @@
 
+#include "Log/Log.hh"
 #include "sokol_impl.hh"
 #include "keyboard.hh"
 // #include "inputchar.hh"
@@ -28,9 +29,9 @@ void SetupImGuiIniPath() {
     FILE* testFile = fopen(writablePath.string().c_str(), "a");
     if (testFile) {
         fclose(testFile);
-        __android_log_print(ANDROID_LOG_INFO, "River", "Ini path is writable: %s", writablePath.string().c_str());
+        infof("Ini path is writable: %s", writablePath.string().c_str());
     } else {
-        __android_log_print(ANDROID_LOG_ERROR, "River", "Ini path is NOT writable: %s", writablePath.string().c_str());
+        errorf("Ini path is NOT writable: %s", writablePath.string().c_str());
     }
     ImGui::LoadIniSettingsFromDisk(io.IniFilename);
 }
@@ -49,7 +50,7 @@ static void init(void) {
     ImGui::SetCurrentContext(ImGui::GetCurrentContext());
     SetupImGuiIniPath();
     ImGuiIO io = ImGui::GetIO();
-    __android_log_print(ANDROID_LOG_INFO, "River", "IniFilename = %s", io.IniFilename ? io.IniFilename : "null");
+    infof("IniFilename = %s", io.IniFilename ? io.IniFilename : "null")
     
     ImGui::GetIO().FontGlobalScale = 2.5f;
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
@@ -57,17 +58,17 @@ static void init(void) {
     int width, height;
     ImGui::GetIO().Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
-    __android_log_print(ANDROID_LOG_INFO, "River", "ImGui Setup Done!");
+    infof("River", "ImGui Setup Done!")
 }
 
 static void frame(void) {
     if (!sg_isvalid()) {
-        __android_log_print(ANDROID_LOG_ERROR, "River", "!sg_isvalid()!");
+        errorf("!sg_isvalid()!")
         return;
     }
     // 调试打印：检查当前上下文
     if (ImGui::GetCurrentContext() == nullptr) {
-        __android_log_print(ANDROID_LOG_ERROR, "River", "CRITICAL: ImGui Context is NULL!");
+        errorf("CRITICAL: ImGui Context is NULL!")
         return;
     }
 
