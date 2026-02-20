@@ -12,7 +12,7 @@ void show_android_keyboard(jobject activity, JavaVM* jvm, bool show) {
         needDetach = true;
     }
     jclass javaClass = env->GetObjectClass(activity);
-    __android_log_print(ANDROID_LOG_DEBUG, "River", "print java class %p", javaClass);
+    // __android_log_print(ANDROID_LOG_DEBUG, "River", "print java class %p", javaClass);
     jmethodID fnId = env->GetMethodID(javaClass, "showKeyBoard", "()V");
     if (!fnId) {
         __android_log_print(ANDROID_LOG_DEBUG, "River", "invalid fn id");

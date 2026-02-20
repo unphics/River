@@ -31,6 +31,7 @@ target("River")
     set_kind("binary")
     set_languages("c++17")
 
+    add_includedirs("libs/ghc")
     add_includedirs("libs/sokol")
     add_includedirs("libs/sokol/util")
     add_includedirs("libs/imgui")

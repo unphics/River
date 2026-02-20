@@ -2,7 +2,7 @@
 #include "sokol_impl.hh"
 #include "keyboard.hh"
 // #include "inputchar.hh"
-
+#include "FileSystem.hh"
 #include "imgui.h"
 #include "sokol_imgui.h"
 #include <android/native_activity.h>
@@ -10,6 +10,30 @@
 
 static JavaVM* g_vm = nullptr;
 static jobject g_activity = nullptr;
+static std::string InternalStoragePath;
+
+void SetupImGuiIniPath() {
+    // 构建一个明确的、可写的路径：内部存储目录 + 文件名
+    fs::path writablePath = fs::path(InternalStoragePath) / "imgui.ini";
+    ImGuiIO& io = ImGui::GetIO();
+    // 将默认的 "imgui.ini" 改为这个完整路径
+    io.IniFilename = strdup(writablePath.string().c_str()); 
+    
+    // 检查该路径是否可写（可选，用于调试）
+    std::error_code ec;
+    if (!fs::exists(writablePath.parent_path())) {
+        fs::create_directories(writablePath.parent_path(), ec);
+    }
+    // 可以尝试创建或打开一个测试文件来验证权限
+    FILE* testFile = fopen(writablePath.string().c_str(), "a");
+    if (testFile) {
+        fclose(testFile);
+        __android_log_print(ANDROID_LOG_INFO, "River", "Ini path is writable: %s", writablePath.string().c_str());
+    } else {
+        __android_log_print(ANDROID_LOG_ERROR, "River", "Ini path is NOT writable: %s", writablePath.string().c_str());
+    }
+    ImGui::LoadIniSettingsFromDisk(io.IniFilename);
+}
 
 static void init(void) {
     // 先初始化渲染器
@@ -22,9 +46,13 @@ static void init(void) {
     simgui_desc_t imgui_desc = {};
     imgui_desc.logger.func = slog_func;
     simgui_setup(&imgui_desc);
-    ImGui::SetCurrentContext(ImGui::GetCurrentContext()); 
+    ImGui::SetCurrentContext(ImGui::GetCurrentContext());
+    SetupImGuiIniPath();
+    ImGuiIO io = ImGui::GetIO();
+    __android_log_print(ANDROID_LOG_INFO, "River", "IniFilename = %s", io.IniFilename ? io.IniFilename : "null");
+    
     ImGui::GetIO().FontGlobalScale = 2.5f;
-
+    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     unsigned char* pixels;
     int width, height;
     ImGui::GetIO().Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
@@ -53,7 +81,7 @@ static void frame(void) {
 
     // 开始imgui新的一帧
     simgui_new_frame({sapp_width(), sapp_height(), sapp_frame_duration()});
-    
+    ImGui::DockSpaceOverViewport(0, nullptr, ImGuiConfigFlags_DockingEnable);
     // 编写UI界面逻辑
     ImGui::SetNextWindowPos(ImVec2(50, 50), ImGuiCond_FirstUseEver);
     ImGui::Begin("River Debug Tools");
@@ -128,7 +156,6 @@ std::string UnicodeToUTF8(int cp) {
     return out;
 }
 
-static std::string InternalStoragePath;
 extern "C" {
 // JNI的函数名必须严格匹配包名; Java_包名_类名_方法名
 JNIEXPORT void JNICALL Java_com_river_app_MainActivity_sendCharToNative(JNIEnv* env, jobject obj, jint unicodeChar) {
@@ -145,7 +172,7 @@ JNIEXPORT void JNICALL Java_com_river_app_MainActivity_nativeSetActivity(JNIEnv*
     env->GetJavaVM(&g_vm);
     g_activity = env->NewGlobalRef(thiz);
     // __android_log_print(ANDROID_LOG_DEBUG, "River", "Activity captured from Java. env=[%p] vm=[%p] activity=[%p]", env, g_vm, g_activity);
-    show_android_keyboard(g_activity, g_vm, true);
+    // show_android_keyboard(g_activity, g_vm, true);
 }
 JNIEXPORT void JNICALL Java_com_river_app_MainActivity_setNativeStoragePath(JNIEnv* env, jobject obj, jstring path) {
     const char* pathStr = env->GetStringUTFChars(path, nullptr);
