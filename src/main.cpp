@@ -1,6 +1,6 @@
 
 #include "Log/Log.hh"
-#include "sokol_impl.hh"
+#include "Sokol/sokol_impl.hh"
 #include "keyboard.hh"
 // #include "inputchar.hh"
 #include "FileSystem.hh"
@@ -58,7 +58,7 @@ static void init(void) {
     int width, height;
     ImGui::GetIO().Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
-    infof("River", "ImGui Setup Done!")
+    infof("ImGui Setup Done!")
 }
 
 static void frame(void) {
