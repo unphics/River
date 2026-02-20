@@ -84,6 +84,7 @@ static void frame(void) {
     ImGui::DockSpaceOverViewport(0, nullptr, ImGuiConfigFlags_DockingEnable);
     // 编写UI界面逻辑
     ImGui::SetNextWindowPos(ImVec2(50, 50), ImGuiCond_FirstUseEver);
+    /*
     ImGui::Begin("River Debug Tools");
     ImGui::Text("Hello, Android");
     if (ImGui::Button("TapMe")) {
@@ -98,6 +99,48 @@ static void frame(void) {
     if (ImGui::GetIO().WantTextInput) {
         show_android_keyboard(g_activity, g_vm, true);
     }
+    ImGui::End();
+    */
+
+    ImGui::Begin("River Top Line");
+    ImGui::End();
+    
+    ImGui::Begin("River Content");
+
+    static char content[1024] = "qqqqqqqqqqqq\nwwwwwwwwwwww    \nrrrr";
+    ImGui::InputTextMultiline("content", content, sizeof(content), ImVec2(500, 500), ImGuiInputTextFlags_AllowTabInput);
+    if (ImGui::IsItemActivated()) {
+        show_android_keyboard(g_activity, g_vm, true);
+    }
+    ImGui::End();
+    
+    ImGui::Begin("River Bottom Line");
+
+    // if (ImGui::Button("Btn1")) {}
+    // ImGui::SameLine();
+    // ImGui::Button("Btn2");
+    // ImGui::SameLine();
+    // ImGui::Button("Btn3");
+    // ImGui::SameLine();
+    // ImGui::Button("Btn4");
+
+    if (ImGui::BeginTable("button table", 4, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Borders)) {
+        float avail_width = ImGui::GetContentRegionAvail().x;
+        float col_width = avail_width / 4.0f;
+        for (int i = 0; i < 4; i++) {
+            ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, col_width);
+        }
+        ImGui::TableNextRow();
+        for (int i = 0; i < 4; i++) {
+            ImGui::TableSetColumnIndex(i);
+            std::string btnLabel = "Btn" + std::to_string(i+1);
+            if (ImGui::Button(btnLabel.c_str(), ImVec2(-FLT_MIN, 0.0f))) {
+                // 按钮点击处理
+            }
+        }
+        ImGui::EndTable();
+    }
+    
     ImGui::End();
 
     // 渲染

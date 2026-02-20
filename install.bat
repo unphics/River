@@ -5,4 +5,4 @@ adb logcat -c
 @REM adb logcat -s RiverTag SDL
 @REM adb logcat *:E River:I
 @REM adb logcat RiverTag:I SDL:I
-adb logcat -s River
+@REM adb logcat -s River
