@@ -18,6 +18,6 @@ __android_log_print(ANDROID_LOG_WARNF, LOG_TAG, __VA_ARGS__);
 __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__);
 
 #define fatalf(...)\
-__android_log_print(ANDROID_LOG_FATALF, LOG_TAG, __VA_ARGS__);
+__android_log_print(ANDROID_LOG_FATAL, LOG_TAG, __VA_ARGS__);
 
 #endif

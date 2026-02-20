@@ -1,5 +1,5 @@
-#ifndef ImGui_hh
-#define ImGui_hh
+#ifndef UI_ImGui_hh
+#define UI_ImGui_hh
 
 /**
  * 常用api简介
@@ -77,6 +77,6 @@
  *          
  */
 
-
+#include "Sokol/Sokol.hh"
 
 #endif

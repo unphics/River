@@ -1,13 +1,3 @@
-#ifndef FileSystem_hh
-#define FileSystem_hh
-
-#ifdef __cpp_lib_filesystem
-#include <filesystem>
-namespace fs = ::std::filesystem;
-#else
-#include "fs_impl.hpp"
-namespace fs = ::ghc::filesystem;
-#endif
 
 /**
  * 常用api:
@@ -56,6 +46,15 @@ namespace fs = ::ghc::filesystem;
  *      fs::current_path()                              获取/设置当前工作目录
  */
 
+#ifndef File_FileSystem_hh
+#define File_FileSystem_hh
 
+#ifdef __cpp_lib_filesystem
+#include <filesystem>
+namespace fs = ::std::filesystem;
+#else
+#include "filesystem.hpp"
+namespace fs = ::ghc::filesystem;
+#endif
 
 #endif
