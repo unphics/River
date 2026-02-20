@@ -21,6 +21,7 @@ void River::UIManager::InitUIManager() {
     this->_InitConfigFile();
     ImGui::GetIO().FontGlobalScale = 2.5f;
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    this->_ScrrenSize = ImGui::GetIO().DisplaySize;
     infof("UIManager:InitUIManager(): Init done")
 }
 
