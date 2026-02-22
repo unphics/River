@@ -2,26 +2,26 @@
 /**
  * 常用api:
  *  1. 路径操作类
- *      fs::path p = "dir/file.txt"     构造路径对象
- *      p /= "subdir"                   追加路径元素(类似/操作符)
- *      p.filename()                    返回文件名
- *      p.stem()                        返回不带扩展名的文件名
- *      p.extension()                   返回扩展名
- *      p.parent_path()                 返回父目录路径
- *      p.is_absolute()                 是否为绝对路径
- *      p.is_relative()                 是否为相对路径
- *      fs::absolute(p)                 将相对路径转换为绝对路径
- *      fs::canonical(p)                返回规范化的绝对路径(解析符号链接he./..)
- *      u8string() / string()           转换为utf8或本地编码字符串
+ *      fs::path p = "dir/file.txt"                     构造路径对象
+ *      p /= "subdir"                                   追加路径元素(类似/操作符)
+ *      p.filename()                                    返回文件名
+ *      p.stem()                                        返回不带扩展名的文件名
+ *      p.extension()                                   返回扩展名
+ *      p.parent_path()                                 返回父目录路径
+ *      p.is_absolute()                                 是否为绝对路径
+ *      p.is_relative()                                 是否为相对路径
+ *      fs::absolute(p)                                 将相对路径转换为绝对路径
+ *      fs::canonical(p)                                返回规范化的绝对路径(解析符号链接he./..)
+ *      u8string() / string()                           转换为utf8或本地编码字符串
  *  2. 文件状态与属性查询
- *      fs::exits(p)                判断路径是否存在
- *      fs::is_directory(p)         是否为目录
- *      fs::is_regular_file(p)      是否是普通文件
- *      fs::is_symlink(p)           是否是符号链接
- *      fs::file_size(p)            获取文件大小
- *      fs::last_write_time(p)      获取最后修改时间(返回fs::time_type)
- *      fs::status(p)               获取文件状态(权限,类型等)
- *      fs::space(p)                获取所在分区的空间信息(总容量/可用/空闲)
+ *      fs::exits(p)                                    判断路径是否存在
+ *      fs::is_directory(p)                             是否为目录
+ *      fs::is_regular_file(p)                          是否是普通文件
+ *      fs::is_symlink(p)                               是否是符号链接
+ *      fs::file_size(p)                                获取文件大小
+ *      fs::last_write_time(p)                          获取最后修改时间(返回fs::time_type)
+ *      fs::status(p)                                   获取文件状态(权限,类型等)
+ *      fs::space(p)                                    获取所在分区的空间信息(总容量/可用/空闲)
  *  3. 目录迭代(遍历文件夹)
  *      fs::directory_iterator                          遍历单层目录
  *      fs::recursive_directory_iterator                递归遍历所有子目录
