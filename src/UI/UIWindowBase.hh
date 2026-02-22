@@ -6,7 +6,10 @@ namespace River {
 class UIManager;
 
 class UIWindowBase {
-
+public:
+    virtual ~UIWindowBase() {}
+public:
+    virtual void TickWindow() {}
 };
     
 }

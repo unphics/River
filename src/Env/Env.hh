@@ -5,7 +5,7 @@
 
 namespace River {
 
-static std::string InternalStoragePath;
+inline std::string InternalStoragePath;
 
 }
 

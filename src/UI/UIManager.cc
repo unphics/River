@@ -5,6 +5,8 @@
 #include "Env/Env.hh"
 #include "Log/Log.hh"
 
+#include "UI/UI_Main.hh"
+
 #include "Sokol/Sokol.hh"
 
 River::UIManager* River::UIManager::_instance = nullptr;
@@ -16,12 +18,18 @@ River::UIManager* River::UIManager::GetUIManager() {
     return UIManager::_instance;
 }
 
+River::UIManager::~UIManager() {
+    for (auto& wdn : this->_Windows) {
+        
+    }
+}
+
 void River::UIManager::InitUIManager() {
     this->_InitImGuiEnv();
     this->_InitConfigFile();
-    ImGui::GetIO().FontGlobalScale = 2.5f;
+    ImGui::GetIO().FontGlobalScale = 2.0f;
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-    this->_ScrrenSize = ImGui::GetIO().DisplaySize;
+    this->_OpenDefaultUI();
     infof("UIManager:InitUIManager(): Init done")
 }
 
@@ -59,40 +67,53 @@ void River::UIManager::TickUIManager() {
     
     ImGui::DockSpaceOverViewport(0, nullptr, ImGuiConfigFlags_DockingEnable);
 
-    ImGui::Begin("River Top Line");
-    ImGui::End();
+    // ImGui::Begin("River Top Line");
+    // ImGui::End();
     
-    ImGui::Begin("River Content");
+    // ImGui::Begin("River Content");
 
-    static char content[1024] = "qqqqqqqqqqqq\nwwwwwwwwwwww    \nrrrr";
-    ImGui::InputTextMultiline("content", content, sizeof(content), ImVec2(500, 500), ImGuiInputTextFlags_AllowTabInput);
-    if (ImGui::IsItemActivated()) {
-        // show_android_keyboard(g_activity, g_vm, true);
-    }
-    ImGui::End();
+    // static char content[1024] = "qqqqqqqqqqqq\nwwwwwwwwwwww    \nrrrr";
+    // ImGui::InputTextMultiline("content", content, sizeof(content), ImVec2(500, 500), ImGuiInputTextFlags_AllowTabInput);
+    // if (ImGui::IsItemActivated()) {
+    //     // show_android_keyboard(g_activity, g_vm, true);
+    // }
+    // ImGui::End();
     
-    ImGui::Begin("River Bottom Line");
+    // ImGui::Begin("River Bottom Line");
 
-    if (ImGui::BeginTable("button table", 4, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Borders)) {
-        float avail_width = ImGui::GetContentRegionAvail().x;
-        float col_width = avail_width / 4.0f;
-        for (int i = 0; i < 4; i++) {
-            ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, col_width);
-        }
-        ImGui::TableNextRow();
-        for (int i = 0; i < 4; i++) {
-            ImGui::TableSetColumnIndex(i);
-            std::string btnLabel = "Btn" + std::to_string(i+1);
-            if (ImGui::Button(btnLabel.c_str(), ImVec2(-FLT_MIN, 0.0f))) {
-                // 按钮点击处理
-            }
-        }
-        ImGui::EndTable();
-    }
+    // if (ImGui::BeginTable("button table", 4, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Borders)) {
+    //     float avail_width = ImGui::GetContentRegionAvail().x;
+    //     float col_width = avail_width / 4.0f;
+    //     for (int i = 0; i < 4; i++) {
+    //         ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, col_width);
+    //     }
+    //     ImGui::TableNextRow();
+    //     for (int i = 0; i < 4; i++) {
+    //         ImGui::TableSetColumnIndex(i);
+    //         std::string btnLabel = "Btn" + std::to_string(i+1);
+    //         if (ImGui::Button(btnLabel.c_str(), ImVec2(-FLT_MIN, 0.0f))) {
+    //             // 按钮点击处理
+    //         }
+    //     }
+    //     ImGui::EndTable();
+    // }
     
-    ImGui::End();
+    // ImGui::End();
+
+    
+    for (auto& wdn : this->_Windows) {
+        wdn->TickWindow();
+    }
 }
 
 void River::UIManager::MakeRender() {
     simgui_render();
+}
+
+void River::UIManager::CloseUI(River::UIWindowBase* wdn) {
+
+}
+
+void River::UIManager::_OpenDefaultUI() {
+    this->OpenUI<River::UI_Main>();
 }

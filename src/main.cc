@@ -1,7 +1,7 @@
 
 #include "Log/Log.hh"
 #include "Sokol/Sokol.hh"
-#include "keyboard.hh"
+#include "Input/keyboard.hh"
 #include "File/FileSystem.hh"
 #include "UI/UIManager.hh"
 #include "Env/Env.hh"
@@ -107,8 +107,9 @@ JNIEXPORT void JNICALL Java_com_river_app_MainActivity_nativeSetActivity(JNIEnv*
 }
 JNIEXPORT void JNICALL Java_com_river_app_MainActivity_setNativeStoragePath(JNIEnv* env, jobject obj, jstring path) {
     const char* pathStr = env->GetStringUTFChars(path, nullptr);
-    River::InternalStoragePath = pathStr;
+    River::InternalStoragePath = std::string(pathStr);
     env->ReleaseStringUTFChars(path, pathStr);
+    infof("River::InternalStoragePath [%s]", River::InternalStoragePath.c_str())
 }
 
 }
